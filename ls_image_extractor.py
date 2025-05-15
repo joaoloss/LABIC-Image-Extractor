@@ -9,6 +9,24 @@ from pathlib import Path
 import json
 import cv2
 
+ID_TO_NAME = {
+    1: "lorenzopx",
+    6: "igor_jales",
+    7: "leonardo_l_cardoso",
+    8: "ademilton_silva",
+    14: "luizfelipedesouzafigueiredo",
+    15: "luara",
+    16: "eduardafcalon",
+    17: "isabelaxaviermarques",
+    18: "isadoraeleuterio",
+    19: "alice_sr",
+    20: "juniorsilva",
+    21: "victorialferro",
+    22: "hellenavalentim",
+    23: "leticia_t_souza",
+    25: "allan_cm"
+}
+
 def parse_args():
     parser = ArgumentParser()
     
@@ -76,10 +94,10 @@ def main():
 
                 annotations_list = label["annotations"]
                 for annotations in annotations_list:
-                    completed_by = str(annotations["completed_by"])
+                    completed_by_name = ID_TO_NAME[int(annotations["completed_by"])]
                     results = annotations['result']
 
-                    create_dir(os.path.join(output_folder, completed_by), verbose=verbose)
+                    create_dir(os.path.join(output_folder, completed_by_name), verbose=verbose)
                     for i in range(0, len(results)):
                         value = results[i]["value"]
                         if verbose:
@@ -95,8 +113,8 @@ def main():
                             if ' ' in label:
                                 label = label.replace(" ","_")
                             
-                            create_dir(os.path.join(output_folder, completed_by, label), verbose)
-                            image_path_ = Path(output_folder, completed_by, label, completed_by + '_' + path_obj.parts[1] + "_" + str(i) + "_" + path_obj.parts[2])
+                            create_dir(os.path.join(output_folder, completed_by_name, label), verbose)
+                            image_path_ = Path(output_folder, completed_by_name, label, completed_by_name + '_' + path_obj.parts[1] + "_" + str(i) + "_" + path_obj.parts[2])
 
 
                             

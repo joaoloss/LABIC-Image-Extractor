@@ -4,7 +4,7 @@
 
 This repository contains a script developed in Labic (Laboratório de Internet e Ciência de Dados) with non-commercial goals.
 
-The script processes images and the corresponding JSON file exported from Label Studio. It organizes the images into folders based on the ID of the person who labeled them, with subdirectories for each assigned label.
+The script processes images and the corresponding JSON file exported from Label Studio. It organizes the images into folders based on the name of the person who labeled them, with subdirectories for each assigned label.
 
 ## Installation
 
