@@ -13,7 +13,7 @@ def parse_args():
     parser = ArgumentParser()
     
     parser.add_argument(
-        "--verbose", "-v",
+        "-v", "--verbose",
         choices=[0, 1, 2],
         default=0,
         help="Set verbosity level: 0 (silent), 1 (normal), 2 (debug)"
