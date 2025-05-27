@@ -1,3 +1,5 @@
 DatasetCrisis/
 output/
 output_crisis.json
+users.json
+.env

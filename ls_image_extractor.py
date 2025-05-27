@@ -1,31 +1,25 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import sys
 from tqdm import tqdm
 from argparse import ArgumentParser
+import subprocess
+from dotenv import load_dotenv
 
 from pathlib import Path
 import json
 import cv2
 
-ID_TO_NAME = {
-    1: "lorenzopx",
-    6: "igor_jales",
-    7: "leonardo_l_cardoso",
-    8: "ademilton_silva",
-    14: "luizfelipedesouzafigueiredo",
-    15: "luara",
-    16: "eduardafcalon",
-    17: "isabelaxaviermarques",
-    18: "isadoraeleuterio",
-    19: "alice_sr",
-    20: "juniorsilva",
-    21: "victorialferro",
-    22: "hellenavalentim",
-    23: "leticia_t_souza",
-    25: "allan_cm"
-}
+def get_json_files(ip, token):
+    _command_output_crisis = ["curl", "-X", f"\"http://{ip}:7777/api/projects/7/export?exportType=JSON&download_all_tasks=true\"",
+                                "-H", f"\"Authorization: Token {token}\"",
+                                "-H", "\"Accept: application/json\"", ">", "output_crisis.json"]
+    
+    _command_get_users = ["curl", f"\"http://{ip}:7777/api/users/\"", "-H", f"\"Authorization: Token {token}\"",
+                          ">", "users.json"]
+    
+    subprocess.run(_command_output_crisis, shell=True)
+    subprocess.run(_command_get_users, shell=True)
 
 def parse_args():
     parser = ArgumentParser()
@@ -35,6 +29,16 @@ def parse_args():
         choices=[0, 1, 2],
         default=0,
         help="Set verbosity level: 0 (silent), 1 (normal), 2 (debug)"
+    )
+    parser.add_argument(
+        "-gj", "--get-json",
+        action="store_true",
+        help="Get json files from Label Studio flag. If not set no requisition is made"
+    )
+    parser.add_argument(
+        "-ip",
+        default="10.147.17.142",
+        help="Set the ip to get the json files"
     )
     
     args = parser.parse_args()
@@ -60,12 +64,29 @@ def analyse_json_path(path_json, path_obj, verbose):
     return path_json
 
 def main():
+    load_dotenv()
     args = parse_args()
     
     verbose = args.verbose
+    get_json_flag = args.get_json
+    ip = args.ip
+    
+    token = os.getenv("TOKEN")
+    
+    if get_json_flag:
+        print("Getting json files...")
+        get_json_files(ip, token)
+        
+    with open("users.json", encoding="utf-8") as f:
+        users = json.load(f)
     
     with open('output_crisis.json', encoding='utf-8') as f:
         labels = json.load(f)
+    
+    id_to_name = {}
+    
+    for user in users:
+        id_to_name[user["id"]] = user["username"].replace(".", "_")
 
     output_folder = "output"
     create_dir(output_folder, verbose=verbose)        
@@ -94,7 +115,7 @@ def main():
 
                 annotations_list = label["annotations"]
                 for annotations in annotations_list:
-                    completed_by_name = ID_TO_NAME[int(annotations["completed_by"])]
+                    completed_by_name = id_to_name[int(annotations["completed_by"])]
                     results = annotations['result']
 
                     create_dir(os.path.join(output_folder, completed_by_name), verbose=verbose)
