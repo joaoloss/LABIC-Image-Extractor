@@ -5,21 +5,30 @@ from tqdm import tqdm
 from argparse import ArgumentParser
 import subprocess
 from dotenv import load_dotenv
+import pexpect
 
 from pathlib import Path
 import json
 import cv2
 
-def get_json_files(ip, token):
+def get_json_files(ip, token, password):
     url_crisis = f"http://{ip}:7777/api/projects/7/export?exportType=JSON&download_all_tasks=true"
     url_users = f"http://{ip}:7777/api/users/"
     headers = f"-H 'Authorization: Token {token}' -H 'Accept: application/json'"
 
     _command_output_crisis = f"curl -X GET '{url_crisis}' {headers} -o output_crisis.json"
     _command_get_users = f"curl -X GET '{url_users}' -H 'Authorization: Token {token}' -o users.json"
+    _command_dataset_crisis = f"scp -r labic@{ip}:/home/labic/Documentos/DatasetCrisis/ ./"
     
+    # Running two commands to get the json files
     subprocess.run(_command_output_crisis, shell=True)
     subprocess.run(_command_get_users, shell=True)
+    
+    # Running command to get the dataset crisis
+    child = pexpect.spawn(_command_dataset_crisis)
+    child.expect(f"labic@{ip}'s password:")
+    child.sendline(password)
+    child.expect(pexpect.EOF)
 
 def parse_args():
     parser = ArgumentParser()
@@ -31,9 +40,9 @@ def parse_args():
         help="Set verbosity level: 0 (silent), 1 (normal), 2 (debug)"
     )
     parser.add_argument(
-        "-gj", "--get-json",
+        "-gd", "--get-data",
         action="store_true",
-        help="Get json files from Label Studio flag. If not set no requisition is made"
+        help="Get json files from Label Studio and get DatasetCrisis flag. If not set no requisition is made"
     )
     parser.add_argument(
         "-ip",
@@ -68,14 +77,15 @@ def main():
     args = parse_args()
     
     verbose = args.verbose
-    get_json_flag = args.get_json
+    get_data_flag = args.get_data
     ip = args.ip
     
     token = os.getenv("TOKEN")
+    password = os.getenv("PASSWORD")
     
-    if get_json_flag:
+    if get_data_flag:
         print("Getting json files...")
-        get_json_files(ip, token)
+        get_json_files(ip, token, password)
         
     with open("users.json", encoding="utf-8") as f:
         users = json.load(f)

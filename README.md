@@ -25,9 +25,10 @@ Install all requirements:
 ```bash
 pip install -r requirements.txt
 ```
-Lastly, create a `.env` file and add your Label Studio token to it:
+Lastly, create a `.env` file and add your Label Studio token and the PC password to it:
 ```dotenv
 TOKEN=<your_token>
+PASSWORD=<your_password>
 ```
 
 ## Usage
@@ -40,7 +41,7 @@ python ls_image_extractor.py -v <verbose_value> -gj -ip <pc-ip>
 ```
 
 - `-v` or `--verbose`: Sets the verbosity level: 0 (silent), 1 (normal), 2 (debug). The default value is 0.
-- `-gj` or `--get-json`: If this flag is set the script gets the json files from the Label Studio.
+- `-gd` or `--get-data`: If this flag is set the script gets the json files from the Label Studio.
 - `-ip`: Sets the ip to make the GET requisition. The default value is `10.147.17.142`.
 
 All results will be stored in the `output` directory.
