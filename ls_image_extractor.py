@@ -11,12 +11,12 @@ import json
 import cv2
 
 def get_json_files(ip, token):
-    _command_output_crisis = ["curl", "-X", f"\"http://{ip}:7777/api/projects/7/export?exportType=JSON&download_all_tasks=true\"",
-                                "-H", f"\"Authorization: Token {token}\"",
-                                "-H", "\"Accept: application/json\"", ">", "output_crisis.json"]
-    
-    _command_get_users = ["curl", f"\"http://{ip}:7777/api/users/\"", "-H", f"\"Authorization: Token {token}\"",
-                          ">", "users.json"]
+    url_crisis = f"http://{ip}:7777/api/projects/7/export?exportType=JSON&download_all_tasks=true"
+    url_users = f"http://{ip}:7777/api/users/"
+    headers = f"-H 'Authorization: Token {token}' -H 'Accept: application/json'"
+
+    _command_output_crisis = f"curl -X GET '{url_crisis}' {headers} -o output_crisis.json"
+    _command_get_users = f"curl -X GET '{url_users}' -H 'Authorization: Token {token}' -o users.json"
     
     subprocess.run(_command_output_crisis, shell=True)
     subprocess.run(_command_get_users, shell=True)
