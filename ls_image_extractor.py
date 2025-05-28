@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 import subprocess
 from dotenv import load_dotenv
 import pexpect
+import io
+import contextlib
 
 from pathlib import Path
 import json
@@ -20,15 +22,24 @@ def get_json_files(ip, token, password):
     _command_get_users = f"curl -X GET '{url_users}' -H 'Authorization: Token {token}' -o users.json"
     _command_dataset_crisis = f"scp -r labic@{ip}:/home/labic/Documentos/DatasetCrisis/ ./"
     
+    output = io.StringIO()
+    
     # Running two commands to get the json files
+    print("Getting json files...")
     subprocess.run(_command_output_crisis, shell=True)
     subprocess.run(_command_get_users, shell=True)
+        
+    print("Getting dataset...")
+    with contextlib.redirect_stdout(output):
+        
+        # Running command to get the dataset crisis
+        child = pexpect.spawn(_command_dataset_crisis)
+        child.expect(f"labic@{ip}'s password:")
+        child.sendline(password)
+        child.expect(pexpect.EOF)
     
-    # Running command to get the dataset crisis
-    child = pexpect.spawn(_command_dataset_crisis)
-    child.expect(f"labic@{ip}'s password:")
-    child.sendline(password)
-    child.expect(pexpect.EOF)
+    with open("log.txt", "w") as f:
+        f.write(output.getvalue)
 
 def parse_args():
     parser = ArgumentParser()
@@ -84,7 +95,6 @@ def main():
     password = os.getenv("PASSWORD")
     
     if get_data_flag:
-        print("Getting json files...")
         get_json_files(ip, token, password)
         
     with open("users.json", encoding="utf-8") as f:
