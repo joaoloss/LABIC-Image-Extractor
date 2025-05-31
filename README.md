@@ -33,11 +33,11 @@ PASSWORD=<your_password>
 
 ## Usage
 
-To use the script you will need the `DatasetCrisis` directory in the root directory.
+To use the script you will need to be connected to labic's network.
 
-Then, you run the script with the command:
+Run the script with the command:
 ```bash
-python ls_image_extractor.py -v <verbose_value> -gj -ip <pc-ip>
+python ls_image_extractor.py -v <verbose_value> -gd -ip <computer_ip>
 ```
 
 - `-v` or `--verbose`: Sets the verbosity level: 0 (silent), 1 (normal), 2 (debug). The default value is 0.
