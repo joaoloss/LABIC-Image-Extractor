@@ -7,13 +7,12 @@ import subprocess
 from dotenv import load_dotenv
 import pexpect
 import io
-import contextlib
 
 from pathlib import Path
 import json
 import cv2
 
-def get_json_files(ip, token, password):
+def get_data(ip, token, password):
     url_crisis = f"http://{ip}:7777/api/projects/7/export?exportType=JSON&download_all_tasks=true"
     url_users = f"http://{ip}:7777/api/users/"
     headers = f"-H 'Authorization: Token {token}' -H 'Accept: application/json'"
@@ -22,24 +21,32 @@ def get_json_files(ip, token, password):
     _command_get_users = f"curl -X GET '{url_users}' -H 'Authorization: Token {token}' -o users.json"
     _command_dataset_crisis = f"scp -r labic@{ip}:/home/labic/Documentos/DatasetCrisis/ ./"
     
-    output = io.StringIO()
+    output_dataset = io.StringIO()
     
     # Running two commands to get the json files
     print("Getting json files...")
-    subprocess.run(_command_output_crisis, shell=True)
-    subprocess.run(_command_get_users, shell=True)
-        
-    print("Getting dataset...")
-    with contextlib.redirect_stdout(output):
-        
-        # Running command to get the dataset crisis
-        child = pexpect.spawn(_command_dataset_crisis)
+    com1 = subprocess.run(_command_output_crisis, shell=True, capture_output=True, text=True)
+    com2 = subprocess.run(_command_get_users, shell=True, capture_output=True, text=True)
+    
+    # Running command to get the dataset crisis    
+    print("Getting dataset. This might take a while...")
+    child = pexpect.spawn(_command_dataset_crisis, timeout=None, encoding='utf-8')
+    child.logfile = output_dataset # Redirecting pexpect output to the log file
+    
+    try:
         child.expect(f"labic@{ip}'s password:")
         child.sendline(password)
+        
         child.expect(pexpect.EOF)
+    except Exception as e:
+        print("Error during DataSetCrisis transfer: ", e)
+        print(child.before.decode(errors="ignore"))
     
     with open("log.txt", "w") as f:
-        f.write(output.getvalue)
+        f.write(com1.stdout)
+        f.write(com2.stdout)
+        f.write("\n\n")
+        f.write(output_dataset.getvalue())
 
 def parse_args():
     parser = ArgumentParser()
@@ -95,7 +102,7 @@ def main():
     password = os.getenv("PASSWORD")
     
     if get_data_flag:
-        get_json_files(ip, token, password)
+        get_data(ip, token, password)
         
     with open("users.json", encoding="utf-8") as f:
         users = json.load(f)
